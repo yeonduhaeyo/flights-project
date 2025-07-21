@@ -1,0 +1,37 @@
+---
+title: "뉴욕 공항 데이터 분석"
+format: revealjs
+theme: dark
+---
+
+## 팀 정보
+
+1조 : 김동균, 유창우, 이영택, 장승규, 황연주
+
+## 분석 주제
+
+### 2013년 뉴욕 항공 데이터 기반, 2014년 성장 항공사 투자 전략
+
+-   노선 확장, 기체 도입, 운항 품질 개선(지연율)등을 활용하여 항공사 평가기준 마련
+-   시장 분석 및 전략 인사이트 도출
+
+## 분석 데이터 탐색
+
+```{python}
+#| echo: true
+#| eval: true
+#| output: false
+import pandas as pd
+import numpy as np
+import nycflights13 as flights
+
+# 항공편 데이터 (main dataset)
+df_flights = flights.flights
+df_airlines = flights.airlines
+df_airports = flights.airports
+df_planes = flights.planes
+df_weather = flights.weather
+
+df_flights.head()
+
+```
