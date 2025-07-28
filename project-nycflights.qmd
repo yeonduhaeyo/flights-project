@@ -1,37 +1,1396 @@
 ---
 title: "뉴욕 공항 데이터 분석"
 format: revealjs
-theme: dark
+theme: default
+slide-level: 3
+echo: false # 모든 코드 숨김
 ---
 
-## 팀 정보
+## 
 
-1조 : 김동균, 유창우, 이영택, 장승규, 황연주
+<!-- 부제목설정 -->
 
-## 분석 주제
+::: {.middle style="text-align: center; font-size: 2em;"}
+**"[American]{style="color: black;"} 항공의 고공행진, [JetBlue]{style="color: blue;"}가 판도를 바꾸나?"**
+:::
 
-### 2013년 뉴욕 항공 데이터 기반, 2014년 성장 항공사 투자 전략
+## Team 소개
 
--   노선 확장, 기체 도입, 운항 품질 개선(지연율)등을 활용하여 항공사 평가기준 마련
--   시장 분석 및 전략 인사이트 도출
+::: {style="margin-top: 30px;"}
+Team name : 1조
 
-## 분석 데이터 탐색
+Team member : 김동균, 유창우, 이영택, 장승규, 황연주
+:::
 
+## Index
+
+::: {style="font-size: 1.0em; line-height: 2;"}
+1.  프로젝트 배경 및 결과 요약\
+2.  데이터 설명\
+3.  데이터 전처리\
+4.  데이터 분석\
+5.  최종 결과 및 인사이트
+:::
+
+## 프로젝트 배경 및 결과 요약
+
+1.  2013년 JetBlue의 현재 위치
+2.  2013년 현재 환경
+3.  주요 결과 간략 소개
+
+### **JetBlue의 현재 위치**
+
+-   미국 항공사 전체 점유율은 **저가 항공사 기준 2등**
+
+-   뉴욕의 총 항공편 점유율 **2등**
+
+::: {layout-ncol="2"}
+```{python}
+
+import pandas as pd
+import numpy as np
+import nycflights13 as flights  # flights13 데이터 패키지
+import re  # 정규 표현식(Regular Expression)
+
+import seaborn as sns  # 시각화를 위한 패키지
+import matplotlib.pyplot as plt
+
+# 폰트설정
+plt.rc('font', family='Malgun Gothic')
+plt.rc('axes', unicode_minus=False)
+
+df_flights = flights.flights.copy()  # flights 테이블 원본데이터
+df_planes = flights.planes.copy()  # planes 테이블 원본데이터
+df_airports = flights.airports.copy()
+
+df_fill = pd.read_csv("./data/df_fill.csv")
+df_drop = pd.read_csv("./data/df_drop.csv")
+```
+```{python}
+#| fig-align: center
+
+airlines_display = [
+    "United Airlines (UA)",
+    "Delta Air Lines (DL)",
+    "American Airlines (AA)",   # AA
+    "Southwest Airlines (WN)",  # WN 먼저!
+    "US Airways (US)",          # US 뒤로!
+    "JetBlue Airways (B6)",
+    "Alaska Airlines (AS)",
+    "ExpressJet (EV)",
+    "Others (Others)"
+]
+
+rpm_values = [
+    21.21,    # UA
+    20.52,    # DL
+    15.3,     # AA
+    10.73,    # WN
+    7.9,      # US
+    4.26,     # B6
+    3.11,     # AS
+    2.01,     # EV
+    15.02     # Others
+]
+
+carrier_codes_display = {
+    "United Airlines (UA)": "UA",
+    "Delta Air Lines (DL)": "DL",
+    "American Airlines (AA)": "AA",
+    "Southwest Airlines (WN)": "WN",
+    "US Airways (US)": "US",
+    "JetBlue Airways (B6)": "B6",
+    "Alaska Airlines (AS)": "AS",
+    "ExpressJet (EV)": "EV",
+    "Others (Others)": "Others"
+}
+
+custom_color_map = {
+    'UA': '#a5d5c5',
+    'DL': '#f08080',
+    'AA': '#6fa9d2',
+    'US': '#c8e685',
+    'B6': '#000f5d',
+    'EV': "#d1cce6",
+    'WN': '#ccccff',
+    'AS': '#8fbc8f',
+    'Others': '#d3d3d3'
+}
+
+lst = ["JetBlue Airways (B6)", "Southwest Airlines (WN)"]
+colors_custom = [custom_color_map.get(carrier_codes_display[label], '#d3d3d3') for label in airlines_display]
+explode = [0.0 if not label in lst else 0.1 for label in airlines_display]
+
+fig, ax = plt.subplots(figsize=(12, 8))
+wedges, texts, autotexts = ax.pie(
+    rpm_values,
+    labels=airlines_display,
+    autopct='%1.1f%%',
+    startangle=140,
+    colors=colors_custom,
+    explode=explode,
+    textprops={'fontsize': 11}
+)
+
+for i, label in enumerate(airlines_display):
+    texts[i].set_fontweight('bold')
+    texts[i].set_fontsize(16)
+    autotexts[i].set_fontweight('bold')
+    if "JetBlue" in label:
+        autotexts[i].set_color("white")
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y - 0.07))
+    if "ExpressJet (EV)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x - 0.08, y + 0.10))   
+    if "Alaska Airlines (AS)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y + 0.06)) 
+
+# 퍼센트 텍스트 위치 조정
+for i, wedge in enumerate(wedges):
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    r = 0.70
+    if airlines_display[i] == "ExpressJet (EV)":
+        r = 0.87
+    elif airlines_display[i] == "Alaska Airlines (AS)":
+        r = 0.82
+    x = r * np.cos(angle_rad)
+    y = r * np.sin(angle_rad)
+    autotexts[i].set_position((x, y))
+    if airlines_display[i] not in ["ExpressJet (EV)", "Alaska Airlines (AS)"]:
+        autotexts[i].set_fontsize(20)
+    else:
+        autotexts[i].set_fontsize(11)
+
+def draw_arrow_label_to_wedge_edge_middle(ax, text_obj, wedge, arrow_color='gray', r=1.0, y_offset=-0.04):
+    renderer = fig.canvas.get_renderer()
+    bbox = text_obj.get_window_extent(renderer=renderer)
+    x0_fig = (bbox.x0 + bbox.x1) / 2.03
+    y0_fig = (bbox.y0 + bbox.y1) / 2
+    inv = ax.transData.inverted()
+    x0_data, y0_data = inv.transform((x0_fig, y0_fig))
+
+    arrow_start_x = x0_data
+    arrow_start_y = y0_data + y_offset
+
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    x_wedge_edge = r * np.cos(angle_rad)
+    y_wedge_edge = r * np.sin(angle_rad)
+
+    ax.annotate(
+        '', xy=(x_wedge_edge, y_wedge_edge), xytext=(arrow_start_x, arrow_start_y),
+        arrowprops=dict(facecolor=arrow_color, arrowstyle='->', lw=2),
+        annotation_clip=False
+    )
+
+fig.canvas.draw()
+
+ev_idx = airlines_display.index("ExpressJet (EV)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[ev_idx], wedges[ev_idx], r=1.0, y_offset=-0.04)
+as_idx = airlines_display.index("Alaska Airlines (AS)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[as_idx], wedges[as_idx], r=1.0, y_offset=-0.04)
+
+plt.title("2013년 미국 항공사 RPM 점유율", fontsize=30, pad=60, fontweight='bold')
+plt.axis('equal')
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+# 데이터 로드
+df = pd.read_csv("./data/df_fill.csv")
+
+# 🎯 1. 전체 항공사 점유율 분석 (JetBlue 색상 + 퍼센트 강조)
+
+carrier_counts = df['carrier'].value_counts()
+top8_carriers = carrier_counts.head(8)
+others_count = carrier_counts.iloc[8:].sum()
+
+plot_labels = list(top8_carriers.index) + ['Others']
+plot_data = list(top8_carriers.values) + [others_count]
+
+# ✅ JetBlue 전용 색상 (#000f5d) 적용
+jetblue_color = '#000f5d'
+default_colors = plt.cm.Set3(range(len(plot_labels)))
+colors = [jetblue_color if label == 'B6' else default for label, default in zip(plot_labels, default_colors)]
+
+explode = [0.1 if label == 'B6' else 0 for label in plot_labels]
+
+# ✅ 시각화
+fig, ax = plt.subplots(figsize=(12, 8))
+wedges, texts, autotexts = ax.pie(plot_data,
+                                  labels=plot_labels,
+                                  autopct='%1.1f%%',
+                                  colors=colors,
+                                  explode=explode,
+                                  startangle=90,
+                                  textprops={'fontsize': 18, 'fontweight': 'bold'})
+
+# 👉 JetBlue 퍼센트 텍스트만 흰색으로 변경
+for label, autotext in zip(plot_labels, autotexts):
+    autotext.set_color('white' if label == 'B6' else 'black')
+
+# 라벨 텍스트 꾸미기
+for text in texts:
+    text.set_fontsize(20)
+    text.set_fontweight('bold')
+
+# 테두리 설정
+for wedge, label in zip(wedges, plot_labels):
+    wedge.set_linewidth(4 if label == 'B6' else 0.5)
+    wedge.set_edgecolor('red' if label == 'B6' else 'white')
+
+plt.title('뉴욕 공항의 항공사별 점유율', fontsize=30, fontweight='bold')
+
+# 범례 생성
+legend_labels = [f'{label}(JetBlue): {count:,}편' if label == 'B6' else f'{label}: {count:,}편'
+                 for label, count in zip(plot_labels, plot_data)]
+
+plt.legend(wedges, legend_labels,
+           title="항공편 수", title_fontsize=16,
+           fontsize=16, loc="center left",
+           bbox_to_anchor=(1, 0, 0.5, 1))
+plt.tight_layout()
+plt.show()
+```
+:::
+
+###  {.center}
+
+-   JetBlue의 주요 허브 공항으로 뉴욕의 JFK 공항을 사용
+
+::: {layout-ncol="2"}
+```{python}
+#| fig-align: center
+# 필요한 데이터 재정의
+b6_flights = df[df['carrier'] == 'B6']
+b6_origin_counts = b6_flights['origin'].value_counts()
+
+jfk_count = b6_origin_counts.get('JFK', 0)
+other_airports_count = len(b6_flights) - jfk_count
+b6_route_data = [jfk_count, other_airports_count]
+b6_route_labels = ['JFK', 'Other Airports']
+b6_route_colors = ['#000f5d', 'lightgray']
+b6_route_explode = [0.1, 0]
+
+# 파이차트 생성
+fig, ax = plt.subplots(figsize=(12, 8))
+wedges, texts, autotexts = ax.pie(b6_route_data,
+                                  labels=b6_route_labels,
+                                  autopct='%1.1f%%',
+                                  colors=b6_route_colors,
+                                  explode=b6_route_explode,
+                                  startangle=90,
+                                  textprops={'fontsize': 24, 'fontweight': 'bold'})
+
+# 라벨 텍스트 폰트 설정
+for text in texts:
+    text.set_fontsize(24)
+    text.set_fontweight('bold')
+
+# 퍼센트 텍스트: JFK만 흰색으로
+for label, autotext in zip(b6_route_labels, autotexts):
+    if label == 'JFK':
+        autotext.set_color('white')
+    autotext.set_fontsize(18)
+    autotext.set_fontweight('bold')
+
+# 웨지 테두리 설정
+for wedge, label in zip(wedges, b6_route_labels):
+    if label == 'JFK':
+        wedge.set_linewidth(4)
+        wedge.set_edgecolor('red')
+    else:
+        wedge.set_linewidth(0.5)
+        wedge.set_edgecolor('white')
+
+# 제목 및 범례
+plt.title('JetBlue(B6) 내 JFK 출발노선 비중', fontsize=30, fontweight='bold')
+
+b6_route_legend_labels = [
+    f'JFK: {jfk_count:,}편' if label == 'JFK' else f'{label}: {count:,}편'
+    for label, count in zip(b6_route_labels, b6_route_data)
+]
+
+plt.legend(wedges, b6_route_legend_labels,
+           title="JetBlue 출발공항별 항공편 수",
+           title_fontsize=16,
+           fontsize=18,
+           loc="center left",
+           bbox_to_anchor=(1, 0, 0.5, 1))
+
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| fig-align: center
+
+# ✅ JFK 출발 항공편 필터링
+jfk_flights = df[df['origin'] == 'JFK']
+carrier_counts = jfk_flights['carrier'].value_counts()
+
+# ✅ 상위 6개 항공사만 개별 표시
+top6_labels = carrier_counts.head(6).index.tolist()
+top6_values = carrier_counts.head(6).values.tolist()
+
+# ✅ Others 항공편 수 계산
+others_value = carrier_counts.iloc[6:].sum()
+
+# ✅ 최종 데이터 정의
+jfk_labels = top6_labels + ['Others']
+jfk_data = top6_values + [others_value]
+jfk_explode = [0.1 if label == 'B6' else 0 for label in jfk_labels]
+
+# ✅ 항공사 코드 → 풀네임 매핑
+carrier_fullnames = {
+    'B6': 'JetBlue Airways',
+    'DL': 'Delta Air Lines',
+    '9E': 'Endeavor Air',
+    'AA': 'American Airlines',
+    'MQ': 'Envoy Air',
+    'UA': 'United Airlines',
+    'Others': 'Others'
+}
+jfk_labels_full = [carrier_fullnames.get(label, label) for label in jfk_labels]
+
+# ✅ 색상 정의 (상위 6개 + Others)
+refined_carrier_color_map = {
+    'B6': '#000f5d',
+    'DL': '#f08080',
+    '9E': '#fbb4d8',
+    'AA': '#6fa9d2',
+    'MQ': '#ffcc66',
+    'UA': '#a5d5c5',
+    'Others': '#d3d3d3'
+}
+jfk_colors_refined = [refined_carrier_color_map.get(label, 'gray') for label in jfk_labels]
+
+# ✅ 파이차트 시각화
+fig, ax = plt.subplots(figsize=(12, 8))
+wedges, texts, autotexts = ax.pie(
+    jfk_data,
+    labels=jfk_labels_full,  # ← 풀네임 라벨 사용
+    autopct='%1.1f%%',
+    colors=jfk_colors_refined,
+    explode=jfk_explode,
+    startangle=90,
+    textprops={'fontsize': 24, 'fontweight': 'bold'}
+)
+
+# ✅ 텍스트 스타일
+for text in texts:
+    text.set_fontsize(24)
+    text.set_fontweight('bold')
+
+for label_code, autotext in zip(jfk_labels, autotexts):
+    autotext.set_color('white' if label_code == 'B6' else 'black')
+
+for wedge, label_code in zip(wedges, jfk_labels):
+    wedge.set_linewidth(4 if label_code == 'B6' else 0.5)
+    wedge.set_edgecolor('red' if label_code == 'B6' else 'white')
+
+# ✅ 범례 정의 (풀네임 기준 + JetBlue 강조)
+legend_labels = [
+    f'{carrier_fullnames[label]} (JetBlue): {count:,}편' if label == 'B6' 
+    else f'{carrier_fullnames[label]}: {count:,}편'
+    for label, count in zip(jfk_labels, jfk_data)
+]
+
+# plt.legend(wedges, legend_labels,
+#            title="JFK 출발 항공편 수",
+#            title_fontsize=20,
+#            fontsize=14,
+#            loc="center",                         # 중앙 정렬
+#            bbox_to_anchor=(1.02, 0.5))           # 오른쪽 바깥, 중간 위치
+
+
+plt.title('JFK 공항의 항공사별 점유율 (Top 6 + Others)', fontsize=30, fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+```
+:::
+
+### **환경**
+
+-   American airlines와 US airways가 현재 합병 진행중
+-   상위권의 다른 대형 항공사들이 1위 자리를 지키려고 함
+-   JetBlue는 저가 항공 포지션에서 대형 항공사에 매각 하려 함
+
+```{python}
+#| fig-align: center
+
+airlines_display = [
+    "United Airlines (UA)",
+    "Delta Air Lines (DL)",
+    "American + US Airways (AA+US)",
+    "Southwest Airlines (WN)",
+    "JetBlue Airways (B6)",
+    "Alaska Airlines (AS)",
+    "ExpressJet (EV)",
+    "Others (Others)"
+]
+
+rpm_values = [
+    21.21, 20.52, (15.27 + 7.87), 10.73, 4.26, 3.11, 2.01, 15.02
+]
+
+
+carrier_codes_display = {
+    "United Airlines (UA)": "UA",
+    "Delta Air Lines (DL)": "DL",
+    "American + US Airways (AA+US)": "AA+US",
+    "Southwest Airlines (WN)": "WN",
+    "JetBlue Airways (B6)": "B6",
+    "Alaska Airlines (AS)": "AS",
+    "ExpressJet (EV)": "EV",
+    "Others (Others)": "Others"
+}
+
+custom_color_map = {
+    'UA': '#a5d5c5',
+    'DL': '#f08080',
+    'AA+US': '#6fa9d2',
+    'B6': '#000f5d',
+    'EV': "#d1cce6",
+    'US': '#c8e685',
+    'WN': '#ccccff',
+    'AS': '#8fbc8f',
+    'Others': '#d3d3d3'
+}
+
+colors_custom = [custom_color_map.get(carrier_codes_display[label], '#d3d3d3') for label in airlines_display]
+explode = [0.0 if "AA+US" not in label else 0.1 for label in airlines_display]
+
+fig, ax = plt.subplots(figsize=(10, 8))
+wedges, texts, autotexts = ax.pie(
+    rpm_values,
+    labels=airlines_display,
+    autopct='%1.1f%%',
+    startangle=140,
+    colors=colors_custom,
+    explode=explode,
+    textprops={'fontsize': 11}
+)
+
+for i, label in enumerate(airlines_display):
+    texts[i].set_fontweight('bold')
+    texts[i].set_fontsize(13)
+    autotexts[i].set_fontweight('bold')
+    if "JetBlue" in label:
+        autotexts[i].set_color("white")
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y - 0.07))
+    if "AA+US" in label:
+        wedges[i].set_edgecolor("red")
+        wedges[i].set_linewidth(3)
+    if "ExpressJet (EV)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x - 0.08, y + 0.20))   
+    if "Alaska Airlines (AS)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y + 0.06)) 
+
+# 모든 퍼센트 위치 기본값
+for i, wedge in enumerate(wedges):
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    # 기본값
+    r = 0.70
+    # EV/AS만 더 바깥쪽(0.85)으로
+    if airlines_display[i] in ["ExpressJet (EV)"]:
+        r = 0.87    # 더 바깥: 0.9~0.95까지 가능 (수정 가능)
+    elif airlines_display[i] in ["Alaska Airlines (AS)"]:
+        r = 0.82
+    x = r * np.cos(angle_rad)
+    y = r * np.sin(angle_rad)
+    autotexts[i].set_position((x, y))
+    if airlines_display[i] not in ["ExpressJet (EV)", "Alaska Airlines (AS)"]:
+        autotexts[i].set_fontsize(15)
+    else:
+        autotexts[i].set_fontsize(11)
+    
+
+def draw_arrow_label_to_wedge_edge_middle(ax, text_obj, wedge, arrow_color='gray', r=1.0, y_offset=-0.04):
+    renderer = fig.canvas.get_renderer()
+    bbox = text_obj.get_window_extent(renderer=renderer)
+    x0_fig = (bbox.x0 + bbox.x1) / 2.03
+    y0_fig = (bbox.y0 + bbox.y1) / 2
+    inv = ax.transData.inverted()
+    x0_data, y0_data = inv.transform((x0_fig, y0_fig))
+
+    arrow_start_x = x0_data
+    arrow_start_y = y0_data + y_offset
+
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    x_wedge_edge = r * np.cos(angle_rad)
+    y_wedge_edge = r * np.sin(angle_rad)
+
+    ax.annotate(
+        '', xy=(x_wedge_edge, y_wedge_edge), xytext=(arrow_start_x, arrow_start_y),
+        arrowprops=dict(facecolor=arrow_color, arrowstyle='->', lw=2),
+        annotation_clip=False
+    )
+
+fig.canvas.draw()
+
+ev_idx = airlines_display.index("ExpressJet (EV)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[ev_idx], wedges[ev_idx], r=1.0, y_offset=-0.04)
+as_idx = airlines_display.index("Alaska Airlines (AS)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[as_idx], wedges[as_idx], r=1.0, y_offset=-0.04)
+
+plt.title("2013년 미국 항공사 RPM 점유율", fontsize=30, pad=-5, fontweight='bold')
+plt.axis('equal')
+plt.tight_layout()
+plt.show()
+
+```
+
+### **기대 결과**
+
+-   대형 항공사와의 합병으로 점유율 1위 달성
+-   저가 항공사인 **Jetblue**의 장점과 대형 항공사의 장점을 합쳐서 좋은 시너지를 기대함
+
+::::: columns
+::: {.column width="50%"}
+```{python}
+airlines_display = [
+    "United + JetBlue (UA+B6)",
+    "Delta Air Lines (DL)",
+    "American + US Airways (AA+US)",
+    "Southwest Airlines (WN)",
+    "Alaska Airlines (AS)",
+    "ExpressJet (EV)",
+    "Others (Others)"
+]
+
+rpm_values = [
+    (21.21 + 4.26), 20.52, (15.27 + 7.87), 10.73, 3.11, 2.01, 15.02
+]
+
+carrier_codes_display = {
+    "United + JetBlue (UA+B6)": "UA+B6",
+    "Delta Air Lines (DL)": "DL",
+    "American + US Airways (AA+US)": "AA+US",
+    "Southwest Airlines (WN)": "WN",
+    "Alaska Airlines (AS)": "AS",
+    "ExpressJet (EV)": "EV",
+    "Others (Others)": "Others"
+}
+
+custom_color_map = {
+    'UA+B6': '#a5d5c5',
+    'DL': '#f08080',
+    'AA+US': '#6fa9d2',
+    'B6': '#000f5d',
+    'EV': "#d1cce6",
+    'US': '#c8e685',
+    'WN': '#ccccff',
+    'AS': '#8fbc8f',
+    'Others': '#d3d3d3'
+}
+
+colors_custom = [custom_color_map.get(carrier_codes_display[label], '#d3d3d3') for label in airlines_display]
+
+# 강조 및 파이 빠져나오는 부분 UA+B6로 바꿈
+explode = [0.1 if "United + JetBlue (UA+B6)" == label else 0.0 for label in airlines_display]
+
+fig, ax = plt.subplots(figsize=(10, 8))
+wedges, texts, autotexts = ax.pie(
+    rpm_values,
+    labels=airlines_display,
+    autopct='%1.1f%%',
+    startangle=140,
+    colors=colors_custom,
+    explode=explode,
+    textprops={'fontsize': 11}
+)
+
+for i, label in enumerate(airlines_display):
+    texts[i].set_fontweight('bold')
+    texts[i].set_fontsize(13)
+    autotexts[i].set_fontweight('bold')
+    # JetBlue 색상 강조는 이미 UA+B6로 합쳐졌으니 별도 처리X
+    if "JetBlue" in label:
+        autotexts[i].set_color("black")
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y - 0.07))
+    # 강조 대상 UA+B6로 변경
+    if "United + JetBlue (UA+B6)" == label:
+        wedges[i].set_edgecolor("red")
+        wedges[i].set_linewidth(3)
+    if "ExpressJet (EV)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x - 0.08, y + 0.20))   
+    if "Alaska Airlines (AS)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y + 0.06)) 
+
+# 퍼센트 텍스트 위치 조정
+for i, wedge in enumerate(wedges):
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    r = 0.70
+    if airlines_display[i] == "ExpressJet (EV)":
+        r = 0.87
+    elif airlines_display[i] == "Alaska Airlines (AS)":
+        r = 0.82
+    x = r * np.cos(angle_rad)
+    y = r * np.sin(angle_rad)
+    autotexts[i].set_position((x, y))
+    if airlines_display[i] not in ["ExpressJet (EV)", "Alaska Airlines (AS)"]:
+        autotexts[i].set_fontsize(15)
+    else:
+        autotexts[i].set_fontsize(11)
+
+def draw_arrow_label_to_wedge_edge_middle(ax, text_obj, wedge, arrow_color='gray', r=1.0, y_offset=-0.04):
+    renderer = fig.canvas.get_renderer()
+    bbox = text_obj.get_window_extent(renderer=renderer)
+    x0_fig = (bbox.x0 + bbox.x1) / 2.03
+    y0_fig = (bbox.y0 + bbox.y1) / 2
+    inv = ax.transData.inverted()
+    x0_data, y0_data = inv.transform((x0_fig, y0_fig))
+
+    arrow_start_x = x0_data
+    arrow_start_y = y0_data + y_offset
+
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    x_wedge_edge = r * np.cos(angle_rad)
+    y_wedge_edge = r * np.sin(angle_rad)
+
+    ax.annotate(
+        '', xy=(x_wedge_edge, y_wedge_edge), xytext=(arrow_start_x, arrow_start_y),
+        arrowprops=dict(facecolor=arrow_color, arrowstyle='->', lw=2),
+        annotation_clip=False
+    )
+
+fig.canvas.draw()
+
+ev_idx = airlines_display.index("ExpressJet (EV)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[ev_idx], wedges[ev_idx], r=1.0, y_offset=-0.04)
+as_idx = airlines_display.index("Alaska Airlines (AS)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[as_idx], wedges[as_idx], r=1.0, y_offset=-0.04)
+
+plt.title("2013년 미국 항공사 RPM 점유율", 
+          fontsize=30, pad=-5, fontweight='bold')
+plt.axis('equal')
+plt.tight_layout()
+plt.show()
+```
+:::
+
+::: {.column width="50%"}
+```{python}
+
+airlines_display = [
+    "United Airlines (UA)",
+    "Delta + JetBlue Air Lines (DL+B6)",
+    "American + US Airways (AA+US)",
+    "Southwest Airlines (WN)",
+    "Alaska Airlines (AS)",
+    "ExpressJet (EV)",
+    "Others (Others)"
+]
+
+rpm_values = [
+    21.21, (20.52 + 4.26), (15.27 + 7.87), 10.73, 3.11, 2.01, 15.02
+]
+
+carrier_codes_display = {
+    "United Airlines (UA)": "UA",
+    "Delta + JetBlue Air Lines (DL+B6)": "DL+B6",
+    "American + US Airways (AA+US)": "AA+US",
+    "Southwest Airlines (WN)": "WN",
+    "Alaska Airlines (AS)": "AS",
+    "ExpressJet (EV)": "EV",
+    "Others (Others)": "Others"
+}
+
+custom_color_map = {
+    'UA': '#a5d5c5',
+    'DL+B6': '#f08080',  # 델타+젯블루 강조 컬러(델타 기준)
+    'AA+US': '#6fa9d2',
+    'B6': '#000f5d',
+    'EV': "#d1cce6",
+    'US': '#c8e685',
+    'WN': '#ccccff',
+    'AS': '#8fbc8f',
+    'Others': '#d3d3d3'
+}
+
+colors_custom = [custom_color_map.get(carrier_codes_display[label], '#d3d3d3') for label in airlines_display]
+
+# DL+B6 강조, explode 설정
+explode = [0.1 if label == "Delta + JetBlue Air Lines (DL+B6)" else 0.0 for label in airlines_display]
+
+fig, ax = plt.subplots(figsize=(10, 8))
+wedges, texts, autotexts = ax.pie(
+    rpm_values,
+    labels=airlines_display,
+    autopct='%1.1f%%',
+    startangle=140,
+    colors=colors_custom,
+    explode=explode,
+    textprops={'fontsize': 11}
+)
+
+for i, label in enumerate(airlines_display):
+    texts[i].set_fontweight('bold')
+    texts[i].set_fontsize(13)
+    autotexts[i].set_fontweight('bold')
+    if "JetBlue" in label:
+        autotexts[i].set_color("white")
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y - 0.07))
+    # DL+B6만 강조(테두리, 두께)
+    if label == "Delta + JetBlue Air Lines (DL+B6)":
+        wedges[i].set_edgecolor("red")
+        wedges[i].set_linewidth(3)
+        x, y = texts[i].get_position()
+        texts[i].set_position((x + 0.23, y))
+    if label == "ExpressJet (EV)":
+        x, y = texts[i].get_position()
+        texts[i].set_position((x - 0.08, y + 0.20))
+    if label == "Alaska Airlines (AS)":
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y + 0.06))
+
+for i, wedge in enumerate(wedges):
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    r = 0.70
+    if airlines_display[i] == "ExpressJet (EV)":
+        r = 0.87
+    elif airlines_display[i] == "Alaska Airlines (AS)":
+        r = 0.82
+    x = r * np.cos(angle_rad)
+    y = r * np.sin(angle_rad)
+    autotexts[i].set_position((x, y))
+    if airlines_display[i] not in ["ExpressJet (EV)", "Alaska Airlines (AS)"]:
+        autotexts[i].set_fontsize(15)
+    else:
+        autotexts[i].set_fontsize(11)
+
+def draw_arrow_label_to_wedge_edge_middle(ax, text_obj, wedge, arrow_color='gray', r=1.0, y_offset=-0.04):
+    renderer = fig.canvas.get_renderer()
+    bbox = text_obj.get_window_extent(renderer=renderer)
+    x0_fig = (bbox.x0 + bbox.x1) / 2.03
+    y0_fig = (bbox.y0 + bbox.y1) / 2
+    inv = ax.transData.inverted()
+    x0_data, y0_data = inv.transform((x0_fig, y0_fig))
+
+    arrow_start_x = x0_data
+    arrow_start_y = y0_data + y_offset
+
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    x_wedge_edge = r * np.cos(angle_rad)
+    y_wedge_edge = r * np.sin(angle_rad)
+
+    ax.annotate(
+        '', xy=(x_wedge_edge, y_wedge_edge), xytext=(arrow_start_x, arrow_start_y),
+        arrowprops=dict(facecolor=arrow_color, arrowstyle='->', lw=2),
+        annotation_clip=False
+    )
+
+fig.canvas.draw()
+
+ev_idx = airlines_display.index("ExpressJet (EV)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[ev_idx], wedges[ev_idx], r=1.0, y_offset=-0.04)
+as_idx = airlines_display.index("Alaska Airlines (AS)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[as_idx], wedges[as_idx], r=1.0, y_offset=-0.04)
+
+plt.title("2013년 미국 항공사 RPM 점유율", fontsize=30, pad=70, fontweight='bold')
+
+plt.axis('equal')
+plt.tight_layout()
+plt.show()
+```
+:::
+:::::
+
+## 데이터 설명
+
+-   nycflights13 데이터 활용 - 2013년도의 뉴욕시 항공 데이터
+
+| 테이블      | 설명                                                 |
+|-------------|------------------------------------------------------|
+| airlines    | 항공사 이름 정보                                     |
+| airports    | 공항 메타데이터 (공항 위치, 이름, 코드 등)           |
+| **flights** | 항공편 데이터 (출발/도착 시간, 지연, 항공편 정보 등) |
+| **planes**  | 항공기 메타데이터 (기체 번호, 제조사, 모델 등)       |
+| weather     | 시간대별 날씨 데이터 (기온, 풍속, 시정 등)           |
+
+## 데이터 전처리
+
+### 데이터 로드
+
+```{python}
+
+import pandas as pd
+import numpy as np
+import nycflights13 as flights  # flights13 데이터 패키지
+import re  # 정규 표현식(Regular Expression)을 사용하여 문자열을 처리하기 위한 표준 라이브러리
+import seaborn as sns  # 시각화를 위한 패키지
+import matplotlib.pyplot as plt
+
+# 폰트설정
+plt.rc('font', family='Malgun Gothic')
+plt.rc('axes', unicode_minus=False)
+
+# print("=== 1. 데이터 불러오기 ===\n")
+df_flights = flights.flights.copy()  # flights 테이블 원본데이터
+df_planes = flights.planes.copy()  # planes 테이블 원본데이터
+
+print(f"flights 데이터: {df_flights.shape}")
+print(f"planes 데이터: {df_planes.shape}")
+df_flights.info()
+```
+
+### Flights 결측치 확인
+
+::::: columns
+::: {.column width="40%"}
+```{python}
+# flights 결측치 컬럼
+flights_mv = df_flights.isnull().sum()
+flights_mv[flights_mv > 0]
+```
+:::
+
+::: {.column width="60%"}
+```{python}
+plt.figure(figsize=(30, 18))
+sns.heatmap(df_flights.isnull(), cbar=False, cmap='cividis', yticklabels=False)
+plt.title("결측치 히트맵", fontsize=100, fontdict={'fontweight':'bold'}, pad=10)
+plt.xticks(fontsize=50, rotation = 90)
+plt.show()
+```
+:::
+:::::
+
+### 시간 데이터 결측치 처리
+
+```{python}
+# 데이터 결측치 처리
+# 2. flights 테이블의 결측치 처리 (모두 결측이면 0으로 채우기)
+# print("\n=== 2. flights 시간 데이터 결측치 처리 ===\n")
+time_delay_cols = ['dep_time', 'arr_time', 'dep_delay', 'arr_delay', 'air_time']
+
+# print("처리 전 결측치 수:")
+for col in time_delay_cols:
+    print(f"{col}: {df_flights[col].isna().sum()}")
+
+# 모든 컬럼이 결측인 행 찾기
+all_missing_mask = df_flights[time_delay_cols].isna().all(axis=1)
+print(f"\n모든 시간/지연 컬럼이 결측인 행의 수: {all_missing_mask.sum()}")
+print(" --> 이 경우 결항으로 가정")
+
+# 모든 컬럼이 결측인 행만 0으로 채우기 --> 결항된 경우로 생각
+df_flights.loc[all_missing_mask, time_delay_cols] = 0
+# 모든 컬럼이 결측인 행만 0으로 채우기 --> 결항된 경우로 생각
+df_flights.loc[all_missing_mask, "is_canceled"] = True
+df_flights.loc[~all_missing_mask, "is_canceled"] = False
+
+# print("\n처리 후 결측치 수:")
+for col in time_delay_cols:
+    print(f"{col}: {df_flights[col].isna().sum()}")
+    
+# print("\n결항 여부 :")
+```
+
+### 항공편 취소 여부 분포
+
+```{python}
+# 카운트 시각화
+#| fig-align: "center"
+plt.rc('font', family='Malgun Gothic')
+plt.rc('axes', unicode_minus=False)
+
+plt.figure(figsize=(6, 5))
+sns.countplot(x='is_canceled', data=df_flights, palette='pastel')
+
+# 그래프 제목 및 라벨
+plt.title('항공편 취소 여부 분포', fontsize=16, fontweight='bold')
+plt.xlabel('취소 여부', fontsize=12)
+plt.ylabel('항공편 수', fontsize=12)
+plt.xticks([0, 1], ['운항됨', '취소됨'])
+
+# 수치 라벨 표시 (선택)
+for p in plt.gca().patches:
+    count = int(p.get_height())
+    plt.gca().annotate(f'{count:,}', (p.get_x() + p.get_width() / 2, p.get_height()), 
+                       ha='center', va='bottom', fontsize=11)
+
+plt.tight_layout()
+plt.show()
+```
+
+### 시간 데이터 결측치 처리 후 결측치 히트맵
+
+```{python}
+plt.figure(figsize=(10, 6))
+sns.heatmap(df_flights.isnull(), cbar=False, cmap='cividis', yticklabels=False)
+plt.title("결측치 히트맵", fontsize=20, fontdict={'fontweight':'bold'}, pad=15)
+plt.xticks(fontsize=12)
+plt.show()
+```
+
+### tailnum, model 결측치 확인
+
+-   flights 테이블과 planes 테이블을 병합
+-   이후 tailnum과 model 결측치 비율 확인
+
+```{python}
+#| fig-align: center
+# 병합
+df_merge = pd.merge(df_flights, df_planes, on='tailnum', how='left', suffixes=('', '_plane'))
+
+# 전체 tailnum, model 결측치 개수와 비율
+total_rows = df_merge.shape[0]
+missing_tailnum_count = df_merge['tailnum'].isna().sum()
+missing_tailnum_ratio = missing_tailnum_count / total_rows * 100
+
+missing_model_count = df_merge['model'].isna().sum()
+missing_model_ratio = missing_model_count / total_rows * 100
+
+print(f"총 행 개수: {total_rows}")
+print(f"tailnum 결측치 개수: {missing_tailnum_count} ({missing_tailnum_ratio:.2f}%)")
+print(f"model 결측치 개수: {missing_model_count} ({missing_model_ratio:.2f}%)")
+
+# 시각화 데이터 준비
+labels = ['존재함', '결측치']
+tailnum_values = [total_rows - missing_tailnum_count, missing_tailnum_count]
+model_values = [total_rows - missing_model_count, missing_model_count]
+
+# 파이차트 그리기
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+
+# tailnum 파이차트
+axs[0].pie(tailnum_values, labels=labels, autopct='%1.1f%%', startangle=90,
+           colors=['#90ee90', '#ff9999'], wedgeprops={'edgecolor': 'white'})
+axs[0].set_title('tailnum 결측 비율')
+
+# model 파이차트
+axs[1].pie(model_values, labels=labels, autopct='%1.1f%%', startangle=90,
+           colors=['#add8e6', '#ff9999'], wedgeprops={'edgecolor': 'white'})
+axs[1].set_title('model 결측 비율')
+
+plt.suptitle('결측치 비율 (tailnum vs. model)', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.show()
+```
+
+### 결측값 채우기 전략
+
+-   기종 기반 정밀 분석(지연률, 기체 성능 등) → dropna 처리
+
+-   운항량 연관, 전체 데이터 흐름 중요 →'Unknown'으로 채움
+
+```{python}
+#| fig-align: center
+# 복사
+new_df = df_merge.copy()
+
+# 처리 전 통계
+total_before = len(new_df)
+missing_model = new_df['model'].isna().sum()
+missing_year = new_df['year_plane'].isna().sum()  # year 컬럼명 확인 필요
+
+# 전략 1: dropna 둘 다 결측치 제거
+df_drop = new_df.dropna(subset=['model', 'year_plane'])
+total_drop = len(df_drop)
+
+# 전략 2: fillna
+df_fill = new_df.copy()
+df_fill['model'] = df_fill['model'].fillna('Unknown')
+df_fill['year_plane'] = df_fill['year_plane'].fillna(
+    df_fill.groupby('tailnum')['year_plane'].transform('mean')
+).round().astype('Int64')
+df_fill['year_plane'] = df_fill['year_plane'].fillna(-1)
+
+# 값 계산
+total_fill = len(df_fill)
+unknown_model = (df_fill['model'] == 'Unknown').sum()
+minus1_year = (df_fill['year_plane'] == -1).sum()
+
+# 시각화 준비
+labels = ['전체 행 수', "'Unknown' model 수", "'-1' year 수"]
+values = [total_fill, unknown_model, minus1_year]
+colors = ['#86bf91', '#f4b183', '#9dc3e6']
+
+# 시각화
+plt.figure(figsize=(8, 5))
+barplot = sns.barplot(x=labels, y=values, palette=colors)
+
+# 막대 위 숫자 표시
+for i, val in enumerate(values):
+    barplot.text(i, val + total_fill * 0.015, f"{val:,}", ha='center', va='bottom', fontsize=11)
+
+plt.title("fillna 적용 후 결과 요약", fontsize=14)
+plt.ylabel("건수")
+plt.ylim(0, total_fill * 1.15)
+plt.tight_layout()
+plt.show()
+```
+
+### 데이터 선택
+
+최종 선택된 컬럼
+
+| 구분 | 포함 컬럼 |
+|------------------------------------|------------------------------------|
+| 날짜/시간 정보 | `year`, `month`, `day`, `hour`, `dep_time`, `sched_dep_time`, `arr_time`, `sched_arr_time` |
+| 지연 정보 | `dep_delay`, `arr_delay` |
+| 항공편 정보 | `carrier`, `flight`, `origin`, `dest` |
+| 항공기 정보 | `tailnum`, `year_plane`, `model` |
+
+## 데이터 분석
+매각 명분 확인 및 타당성 검토
+
+### 항공기체 제작년도 분포
+
+```{python}
+#| fig-align: "center"
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# ===== 1. CSV 불러오기 =====
+df = pd.read_csv("./data/df_drop.csv")
+
+# # ===== 2. 한국어 폰트 설정 =====
+# plt.rcParams['font.family'] = 'Malgun Gothic'
+# plt.rcParams['axes.unicode_minus'] = False
+
+# ===== 3. 대상 항공사 필터링 =====
+target_carriers = ['DL', 'UA', 'B6']
+df_target = df[df['carrier'].isin(target_carriers)].copy()
+
+# 제작년도 결측치 제거
+df_target = df_target.dropna(subset=['year_plane'])
+
+# ===== 4. 모델별 개수 계산 후 상위 N개 모델만 표시 =====
+N = 15
+top_models = df_target['model'].value_counts().head(N).index
+df_filtered = df_target[df_target['model'].isin(top_models)]
+
+# ===== 5. 산점도 기본 시각화 =====
+plt.figure(figsize=(20,15))
+
+# 요청한 색상 코드 적용
+colors = {'DL': '#f08080',  # 연한 빨강
+          'UA': '#a5d5c5',  # 연한 민트
+          'B6': '#000f5d'}  # 진한 네이비
+
+for carrier in target_carriers:
+    subset = df_filtered[df_filtered['carrier'] == carrier]
+    plt.scatter(subset['year_plane'], subset['model'],
+                alpha=0.5, s=200, c=colors[carrier], label=carrier)
+
+# ===== 6. 델타항공 제작년도 낮은 부분 강조 =====
+plt.axvspan(1980, 1995, color='blue', alpha=0.1, label='델타 오래된 제작년도 구간')
+
+# ===== 7. y축 A320-232 라인 강조 =====
+ax = plt.gca()
+yticks = ax.get_yticks()
+yticklabels = [label.get_text() for label in ax.get_yticklabels()]
+if 'A320-232' in yticklabels:
+    index = yticklabels.index('A320-232')
+    y_value = yticks[index]
+    plt.axhspan(y_value-0.3, y_value+0.3, color='red', alpha=0.1)
+
+# ===== 8. y축 라벨 강조 =====
+for label in ax.get_yticklabels():
+    if label.get_text() == 'A320-232':
+        label.set_color('red')
+        label.set_fontweight('bold')
+
+# ===== 9. 축 글씨 크기 및 범례, 타이틀 크기 조정 =====
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.xlabel("제작년도 (year_plane)", fontsize=20)
+plt.ylabel("기종 (model)", fontsize=20)
+plt.title(f"델타 / 유나이티드 / 젯블루 항공 기체 제작년도 분포 (상위 {N} 모델) - A320-232 강조",
+          fontsize=24, fontweight='bold')
+
+plt.legend(title="항공사 / 강조구간", title_fontsize=18, fontsize=16)
+
+plt.tight_layout()
+plt.show()
+```
+
+### 젯블루(B6) 항공사와 사우스웨스트(WN) 항공사의 시간대별 평균 지연시간 비교
+
+```{python}
+#사용된 컬럼: ['carrier', 'hour', 'dep_delay']
+
+# 데이터 불러오기
+df = pd.read_csv('./data/df_drop.csv')
+
+# B6, WN 데이터만 추출
+b6_wn = df[df['carrier'].isin(['B6', 'WN'])].copy()
+
+# 시간대별 평균 지연 계산
+b6_delay = b6_wn[b6_wn['carrier'] == 'B6'].groupby('hour')['dep_delay'].mean().reset_index()
+b6_delay.rename(columns={'dep_delay': 'b6_delay'}, inplace=True)
+wn_delay = b6_wn[b6_wn['carrier'] == 'WN'].groupby('hour')['dep_delay'].mean().reset_index()
+wn_delay.rename(columns={'dep_delay': 'wn_delay'}, inplace=True)
+b6wn_result = pd.merge(b6_delay, wn_delay, on='hour', how='outer').sort_values('hour')
+b6wn_plot = b6wn_result[(b6wn_result['hour'] >= 5) & (b6wn_result['hour'] <= 23)]
+
+# 그래프 그리기
+plt.figure(figsize=(12, 8))
+plt.plot(b6wn_plot['hour'], b6wn_plot['wn_delay'], marker='o', color='#999999', linewidth=2, label='사우스웨스트(WN)')
+plt.plot(b6wn_plot['hour'], b6wn_plot['b6_delay'], marker='o', color='#000f5d', linewidth=4, alpha=0.9, label='젯블루(B6)')
+
+plt.xticks(b6wn_plot['hour'], fontsize=16)
+plt.xlabel('출발 시각 (시)', fontsize=20, labelpad=20)
+plt.ylabel('평균 지연시간 (분)', fontsize=20, labelpad=25)
+plt.title(
+    '젯블루(B6) 항공사와 사우스웨스트(WN) 항공사의 시간대별 평균 지연시간 비교', 
+    fontsize=23, 
+    pad=5,
+    fontweight="bold" # 제목을 위쪽 중앙에 정렬
+)
+
+plt.legend(fontsize=17, loc='upper left')
+plt.grid(True, axis='x', linestyle=':')
+plt.tight_layout()
+plt.show()
+
+```
+
+## 결과
+
+```{python}
+#| fig-align: "center"
+import pandas as pd
+import matplotlib.pyplot as plt
+import platform
+import numpy as np
+
+airlines_display = [
+    "United + JetBlue (UA+B6)",
+    "Delta Air Lines (DL)",
+    "American + US Airways (AA+US)",
+    "Southwest Airlines (WN)",
+    "Alaska Airlines (AS)",
+    "ExpressJet (EV)",
+    "Others (Others)"
+]
+
+rpm_values = [
+    (21.21 + 4.26), 20.52, (15.27 + 7.87), 10.73, 3.11, 2.01, 15.02
+]
+
+carrier_codes_display = {
+    "United + JetBlue (UA+B6)": "UA+B6",
+    "Delta Air Lines (DL)": "DL",
+    "American + US Airways (AA+US)": "AA+US",
+    "Southwest Airlines (WN)": "WN",
+    "Alaska Airlines (AS)": "AS",
+    "ExpressJet (EV)": "EV",
+    "Others (Others)": "Others"
+}
+
+custom_color_map = {
+    'UA+B6': '#a5d5c5',
+    'DL': '#f08080',
+    'AA+US': '#6fa9d2',
+    'B6': '#000f5d',
+    'EV': "#d1cce6",
+    'US': '#c8e685',
+    'WN': '#ccccff',
+    'AS': '#8fbc8f',
+    'Others': '#d3d3d3'
+}
+
+colors_custom = [custom_color_map.get(carrier_codes_display[label], '#d3d3d3') for label in airlines_display]
+
+# 강조 및 파이 빠져나오는 부분 UA+B6로 바꿈
+explode = [0.1 if "United + JetBlue (UA+B6)" == label else 0.0 for label in airlines_display]
+
+fig, ax = plt.subplots(figsize=(10, 8))
+wedges, texts, autotexts = ax.pie(
+    rpm_values,
+    labels=airlines_display,
+    autopct='%1.1f%%',
+    startangle=140,
+    colors=colors_custom,
+    explode=explode,
+    textprops={'fontsize': 11}
+)
+
+for i, label in enumerate(airlines_display):
+    texts[i].set_fontweight('bold')
+    texts[i].set_fontsize(13)
+    autotexts[i].set_fontweight('bold')
+    # JetBlue 색상 강조는 이미 UA+B6로 합쳐졌으니 별도 처리X
+    if "JetBlue" in label:
+        autotexts[i].set_color("black")
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y - 0.07))
+    # 강조 대상 UA+B6로 변경
+    if "United + JetBlue (UA+B6)" == label:
+        wedges[i].set_edgecolor("red")
+        wedges[i].set_linewidth(3)
+    if "ExpressJet (EV)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x - 0.08, y + 0.20))   
+    if "Alaska Airlines (AS)" == label:
+        x, y = texts[i].get_position()
+        texts[i].set_position((x, y + 0.06)) 
+
+# 퍼센트 텍스트 위치 조정
+for i, wedge in enumerate(wedges):
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    r = 0.70
+    if airlines_display[i] == "ExpressJet (EV)":
+        r = 0.87
+    elif airlines_display[i] == "Alaska Airlines (AS)":
+        r = 0.82
+    x = r * np.cos(angle_rad)
+    y = r * np.sin(angle_rad)
+    autotexts[i].set_position((x, y))
+    if airlines_display[i] not in ["ExpressJet (EV)", "Alaska Airlines (AS)"]:
+        autotexts[i].set_fontsize(15)
+    else:
+        autotexts[i].set_fontsize(11)
+
+def draw_arrow_label_to_wedge_edge_middle(ax, text_obj, wedge, arrow_color='gray', r=1.0, y_offset=-0.04):
+    renderer = fig.canvas.get_renderer()
+    bbox = text_obj.get_window_extent(renderer=renderer)
+    x0_fig = (bbox.x0 + bbox.x1) / 2.03
+    y0_fig = (bbox.y0 + bbox.y1) / 2
+    inv = ax.transData.inverted()
+    x0_data, y0_data = inv.transform((x0_fig, y0_fig))
+
+    arrow_start_x = x0_data
+    arrow_start_y = y0_data + y_offset
+
+    theta = (wedge.theta1 + wedge.theta2) / 2
+    angle_rad = np.deg2rad(theta)
+    x_wedge_edge = r * np.cos(angle_rad)
+    y_wedge_edge = r * np.sin(angle_rad)
+
+    ax.annotate(
+        '', xy=(x_wedge_edge, y_wedge_edge), xytext=(arrow_start_x, arrow_start_y),
+        arrowprops=dict(facecolor=arrow_color, arrowstyle='->', lw=2),
+        annotation_clip=False
+    )
+
+fig.canvas.draw()
+
+ev_idx = airlines_display.index("ExpressJet (EV)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[ev_idx], wedges[ev_idx], r=1.0, y_offset=-0.04)
+as_idx = airlines_display.index("Alaska Airlines (AS)")
+draw_arrow_label_to_wedge_edge_middle(ax, texts[as_idx], wedges[as_idx], r=1.0, y_offset=-0.04)
+
+plt.title("2013년 미국 항공사 RPM 점유율", 
+          fontsize=18, pad=-5, fontweight='bold')
+plt.axis('equal')
+plt.tight_layout()
+plt.show()
+```
+
+### 
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ===== 1. 데이터 (시뮬레이션) =====
+years_aa = np.array([2011, 2012, 2013, 2014, 2015, 2016])
+aa_us_base = np.array([5.0, 6.0, 8.5, 11.0, 12.5, 14.0])
+
+df_aa_real = pd.DataFrame({
+    'Year': years_aa,
+    'Type': ['AA + US Airways (실제)'] * len(years_aa),
+    'MarketCap (Billion)': aa_us_base
+})
+
+years_ua_jetblue_aa = np.array([2013, 2014, 2015, 2016, 2017, 2018])
+ua_jetblue_aa_trend = np.array([15.4, 17.0, 18.5, 20.0, 21.0, 22.5])
+
+df_ua_jetblue_aa = pd.DataFrame({
+    'Year': years_ua_jetblue_aa,
+    'Type': ['UA+JetBlue (AA+US Trend)'] * len(years_ua_jetblue_aa),
+    'MarketCap (Billion)': ua_jetblue_aa_trend
+})
+
+df_simulated = pd.concat([df_aa_real, df_ua_jetblue_aa])
+
+# ===== 2. Market.csv 로드 =====
+df_market = pd.read_csv("./data/Market.csv")
+
+# ===== 3. 한국어 변환 매핑 =====
+korean_map = {
+    "United Airlines (UA)": "유나이티드 항공",
+    "Delta Air Lines (DL)": "델타 항공",
+    "American + US Airways (AA+US)": "아메리칸+US 항공",
+    "Southwest Airlines (WN)": "사우스웨스트 항공",
+    "JetBlue Airways (B6)": "젯블루 항공",
+    "Alaska Airlines (AS)": "알래스카 항공",
+    "ExpressJet Airlines (EV)": "익스프레스젯 항공",
+    "Others (Others)": "기타",
+    "AA + US Airways (실제)": "AA+US 실제",
+    "UA+JetBlue (AA+US Trend)": "UA+젯블루 (AA+US 추세)"
+}
+
+# ===== 4. 시각화 =====
+usd_to_eur = 0.9
+fig, ax1 = plt.subplots(figsize=(12, 7))
+
+# Market 데이터 (실선)
+for t in df_market['Type'].unique():
+    subset = df_market[df_market['Type'] == t]
+    ax1.plot(
+        subset['Year'],
+        subset['MarketCap (Billion)'],
+        marker='o',
+        linewidth=2,
+        label=f"[시장] {korean_map.get(t, t)}"
+    )
+
+# 시뮬레이션 데이터 (점선)
+for t in df_simulated['Type'].unique():
+    subset = df_simulated[df_simulated['Type'] == t]
+    ax1.plot(
+        subset['Year'],
+        subset['MarketCap (Billion)'],
+        marker='o',
+        linestyle='--',
+        linewidth=2,
+        label=f"[시뮬레이션] {korean_map.get(t, t)}"
+    )
+
+# 왼쪽 y축 (USD)
+ax1.set_xlabel("연도", fontsize=14)
+ax1.set_ylabel("시가총액 (십억 달러)", fontsize=14)
+ax1.tick_params(axis='y', labelcolor='black')
+ax1.grid(True, alpha=0.3)
+
+# 제목
+fig.suptitle("항공사 시가총액 비교 (USD vs EUR)", fontsize=20, fontweight='bold', y=1.03)
+
+# 범례 (왼쪽 위)
+ax1.legend(loc='upper left', fontsize=12)
+
+plt.tight_layout()
+plt.show()
+```
+
+### Q & A {.middle style="text-align: center; font-size: 2em;"}
 ```{python}
 #| echo: true
 #| eval: true
 #| output: false
-import pandas as pd
-import numpy as np
-import nycflights13 as flights
-
-# 항공편 데이터 (main dataset)
-df_flights = flights.flights
-df_airlines = flights.airlines
-df_airports = flights.airports
-df_planes = flights.planes
-df_weather = flights.weather
-
-df_flights.head()
-
 ```

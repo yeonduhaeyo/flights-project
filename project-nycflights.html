@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="project-nycflights_files/libs/clipboard/clipboard.min.js"></script>
+<script src="project-nycflights_files/libs/clipboard/clipboard.min.js"></script>
 <script src="project-nycflights_files/libs/quarto-html/tabby.min.js"></script>
 <script src="project-nycflights_files/libs/quarto-html/popper.min.js"></script>
 <script src="project-nycflights_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="project-nycflights_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="project-nycflights_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="project-nycflights_files/libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<link href="project-nycflights_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.7.32">
 
   <title>뉴욕 공항 데이터 분석</title>
@@ -27,74 +27,8 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
-    /* CSS for syntax highlighting */
-    html { -webkit-text-size-adjust: 100%; }
-    pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-    pre > code.sourceCode > span:empty { height: 1.2em; }
-    .sourceCode { overflow: visible; }
-    code.sourceCode > span { color: inherit; text-decoration: inherit; }
-    div.sourceCode { margin: 1em 0; }
-    pre.sourceCode { margin: 0; }
-    @media screen {
-    div.sourceCode { overflow: auto; }
-    }
-    @media print {
-    pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-    }
-    pre.numberSource code
-      { counter-reset: source-line 0; }
-    pre.numberSource code > span
-      { position: relative; left: -4em; counter-increment: source-line; }
-    pre.numberSource code > span > a:first-child::before
-      { content: counter(source-line);
-        position: relative; left: -1em; text-align: right; vertical-align: baseline;
-        border: none; display: inline-block;
-        -webkit-touch-callout: none; -webkit-user-select: none;
-        -khtml-user-select: none; -moz-user-select: none;
-        -ms-user-select: none; user-select: none;
-        padding: 0 4px; width: 4em;
-      }
-    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-    div.sourceCode
-      { color: #f8f8f2;  }
-    @media screen {
-    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-    }
-    code span { color: #f8f8f2; } /* Normal */
-    code span.al { color: #f07178; } /* Alert */
-    code span.an { color: #d4d0ab; } /* Annotation */
-    code span.at { color: #00e0e0; } /* Attribute */
-    code span.bn { color: #d4d0ab; } /* BaseN */
-    code span.bu { color: #abe338; } /* BuiltIn */
-    code span.cf { color: #ffa07a; font-weight: bold; } /* ControlFlow */
-    code span.ch { color: #abe338; } /* Char */
-    code span.cn { color: #ffd700; } /* Constant */
-    code span.co { color: #f8f8f2; font-style: italic; } /* Comment */
-    code span.cv { color: #ffd700; } /* CommentVar */
-    code span.do { color: #f8f8f2; } /* Documentation */
-    code span.dt { color: #ffa07a; } /* DataType */
-    code span.dv { color: #d4d0ab; } /* DecVal */
-    code span.er { color: #f07178; text-decoration: underline; } /* Error */
-    code span.ex { color: #00e0e0; font-weight: bold; } /* Extension */
-    code span.fl { color: #d4d0ab; } /* Float */
-    code span.fu { color: #ffa07a; } /* Function */
-    code span.im { color: #abe338; } /* Import */
-    code span.in { color: #d4d0ab; } /* Information */
-    code span.kw { color: #ffa07a; font-weight: bold; } /* Keyword */
-    code span.op { color: #ffa07a; } /* Operator */
-    code span.ot { color: #00e0e0; } /* Other */
-    code span.pp { color: #dcc6e0; } /* Preprocessor */
-    code span.re { color: #00e0e0; background-color: #f8f8f2; } /* RegionMarker */
-    code span.sc { color: #abe338; } /* SpecialChar */
-    code span.ss { color: #abe338; } /* SpecialString */
-    code span.st { color: #abe338; } /* String */
-    code span.va { color: #00e0e0; } /* Variable */
-    code span.vs { color: #abe338; } /* VerbatimString */
-    code span.wa { color: #dcc6e0; } /* Warning */
   </style>
-  <link rel="stylesheet" href="project-nycflights_files/libs/revealjs/dist/theme/quarto-091ebfb71d12db7fc524ec91495e1509.css">
+  <link rel="stylesheet" href="project-nycflights_files/libs/revealjs/dist/theme/quarto-f563837468303362081e247dddd440d0.css">
   <link href="project-nycflights_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="project-nycflights_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="project-nycflights_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -186,11 +120,8 @@
       margin-right: 0; 
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-  
-  <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 </head>
-<body class="quarto-dark">
+<body class="quarto-light">
   <div class="reveal">
     <div class="slides">
 
@@ -201,36 +132,358 @@
 </div>
 
 </section>
-<section id="팀-정보" class="slide level2">
-<h2>팀 정보</h2>
-<p>1조 : 김동균, 유창우, 이영택, 장승규, 황연주</p>
-</section>
-<section id="분석-주제" class="slide level2">
-<h2>분석 주제</h2>
-<h3 id="년-뉴욕-항공-데이터-기반-2014년-성장-항공사-투자-전략">2013년 뉴욕 항공 데이터 기반, 2014년 성장 항공사 투자 전략</h3>
-<ul>
-<li>노선 확장, 기체 도입, 운항 품질 개선(지연율)등을 활용하여 항공사 평가기준 마련</li>
-<li>시장 분석 및 전략 인사이트 도출</li>
-</ul>
-</section>
-<section id="분석-데이터-탐색" class="slide level2">
-<h2>분석 데이터 탐색</h2>
-<div id="8a1d4cfe" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-2"><a href=""></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-3"><a href=""></a><span class="im">import</span> nycflights13 <span class="im">as</span> flights</span>
-<span id="cb1-4"><a href=""></a></span>
-<span id="cb1-5"><a href=""></a><span class="co"># 항공편 데이터 (main dataset)</span></span>
-<span id="cb1-6"><a href=""></a>df_flights <span class="op">=</span> flights.flights</span>
-<span id="cb1-7"><a href=""></a>df_airlines <span class="op">=</span> flights.airlines</span>
-<span id="cb1-8"><a href=""></a>df_airports <span class="op">=</span> flights.airports</span>
-<span id="cb1-9"><a href=""></a>df_planes <span class="op">=</span> flights.planes</span>
-<span id="cb1-10"><a href=""></a>df_weather <span class="op">=</span> flights.weather</span>
-<span id="cb1-11"><a href=""></a></span>
-<span id="cb1-12"><a href=""></a>df_flights.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="section" class="title-slide slide level2 center">
+<h2></h2>
+<!-- 부제목설정 -->
+<div class="middle" style="text-align: center; font-size: 2em;">
+<p><strong>“<span style="color: black;">American</span> 항공의 고공행진, <span style="color: blue;">JetBlue</span>가 판도를 바꾸나?”</strong></p>
 </div>
+</section>
+
+<section id="team-소개" class="title-slide slide level2 center">
+<h2>Team 소개</h2>
+<div style="margin-top: 30px;">
+<p>Team name : 1조</p>
+<p>Team member : 김동균, 유창우, 이영택, 장승규, 황연주</p>
+</div>
+</section>
+
+<section id="index" class="title-slide slide level2 center">
+<h2>Index</h2>
+<div style="font-size: 1.0em; line-height: 2;">
+<ol type="1">
+<li>프로젝트 배경 및 결과 요약<br>
+</li>
+<li>데이터 설명<br>
+</li>
+<li>데이터 전처리<br>
+</li>
+<li>데이터 분석<br>
+</li>
+<li>최종 결과 및 인사이트</li>
+</ol>
+</div>
+</section>
+
+<section>
+<section id="프로젝트-배경-및-결과-요약" class="title-slide slide level2 center">
+<h2>프로젝트 배경 및 결과 요약</h2>
+<ol type="1">
+<li>2013년 JetBlue의 현재 위치</li>
+<li>2013년 현재 환경</li>
+<li>주요 결과 간략 소개</li>
+</ol>
+</section>
+<section id="jetblue의-현재-위치" class="slide level3">
+<h3><strong>JetBlue의 현재 위치</strong></h3>
+<ul>
+<li><p>미국 항공사 전체 점유율은 <strong>저가 항공사 기준 2등</strong></p></li>
+<li><p>뉴욕의 총 항공편 점유율 <strong>2등</strong></p></li>
+</ul>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div id="0d8b0905" class="cell quarto-layout-cell" data-execution_count="2" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="project-nycflights_files/figure-revealjs/cell-3-output-1.png" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="a798697a" class="cell quarto-layout-cell" data-execution_count="3" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="cell-output cell-output-display">
+<div>
+<figure>
+<p><img data-src="project-nycflights_files/figure-revealjs/cell-4-output-1.png"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="section-1" class="slide level3 center">
+<h3></h3>
+<ul>
+<li>JetBlue의 주요 허브 공항으로 뉴욕의 JFK 공항을 사용</li>
+</ul>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div id="c07264bf" class="cell quarto-layout-cell" data-execution_count="4" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="project-nycflights_files/figure-revealjs/cell-5-output-1.png" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="2b1f9b70" class="cell quarto-layout-cell" data-execution_count="5" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="project-nycflights_files/figure-revealjs/cell-6-output-1.png" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="환경" class="slide level3">
+<h3><strong>환경</strong></h3>
+<ul>
+<li>American airlines와 US airways가 현재 합병 진행중</li>
+<li>상위권의 다른 대형 항공사들이 1위 자리를 지키려고 함</li>
+<li>JetBlue는 저가 항공 포지션에서 대형 항공사에 매각 하려 함</li>
+</ul>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-7-output-1.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="기대-결과" class="slide level3">
+<h3><strong>기대 결과</strong></h3>
+<ul>
+<li>대형 항공사와의 합병으로 점유율 1위 달성</li>
+<li>저가 항공사인 <strong>Jetblue</strong>의 장점과 대형 항공사의 장점을 합쳐서 좋은 시너지를 기대함</li>
+</ul>
+<div class="columns">
+<div class="column" style="width:50%;">
+<div id="ddd5efbb" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display">
+<div>
+<figure>
+<p><img data-src="project-nycflights_files/figure-revealjs/cell-8-output-1.png"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:50%;">
+<div id="015b70da" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-display">
+<div>
+<figure>
+<p><img data-src="project-nycflights_files/figure-revealjs/cell-9-output-1.png"></p>
+</figure>
+</div>
+</div>
+</div>
+</div></div>
+</section></section>
+<section id="데이터-설명" class="title-slide slide level2 center">
+<h2>데이터 설명</h2>
+<ul>
+<li>nycflights13 데이터 활용 - 2013년도의 뉴욕시 항공 데이터</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>테이블</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>airlines</td>
+<td>항공사 이름 정보</td>
+</tr>
+<tr class="even">
+<td>airports</td>
+<td>공항 메타데이터 (공항 위치, 이름, 코드 등)</td>
+</tr>
+<tr class="odd">
+<td><strong>flights</strong></td>
+<td>항공편 데이터 (출발/도착 시간, 지연, 항공편 정보 등)</td>
+</tr>
+<tr class="even">
+<td><strong>planes</strong></td>
+<td>항공기 메타데이터 (기체 번호, 제조사, 모델 등)</td>
+</tr>
+<tr class="odd">
+<td>weather</td>
+<td>시간대별 날씨 데이터 (기온, 풍속, 시정 등)</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<section id="데이터-전처리" class="title-slide slide level2 center">
+<h2>데이터 전처리</h2>
 
 </section>
+<section id="데이터-로드" class="slide level3">
+<h3>데이터 로드</h3>
+<div id="c861d0df" class="cell" data-execution_count="9">
+<div class="cell-output cell-output-stdout">
+<pre><code>flights 데이터: (336776, 19)
+planes 데이터: (3322, 9)
+&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 336776 entries, 0 to 336775
+Data columns (total 19 columns):
+ #   Column          Non-Null Count   Dtype  
+---  ------          --------------   -----  
+ 0   year            336776 non-null  int64  
+ 1   month           336776 non-null  int64  
+ 2   day             336776 non-null  int64  
+ 3   dep_time        328521 non-null  float64
+ 4   sched_dep_time  336776 non-null  int64  
+ 5   dep_delay       328521 non-null  float64
+ 6   arr_time        328063 non-null  float64
+ 7   sched_arr_time  336776 non-null  int64  
+ 8   arr_delay       327346 non-null  float64
+ 9   carrier         336776 non-null  object 
+ 10  flight          336776 non-null  int64  
+ 11  tailnum         334264 non-null  object 
+ 12  origin          336776 non-null  object 
+ 13  dest            336776 non-null  object 
+ 14  air_time        327346 non-null  float64
+ 15  distance        336776 non-null  int64  
+ 16  hour            336776 non-null  int64  
+ 17  minute          336776 non-null  int64  
+ 18  time_hour       336776 non-null  object 
+dtypes: float64(5), int64(9), object(5)
+memory usage: 48.8+ MB</code></pre>
+</div>
+</div>
+</section>
+<section id="flights-결측치-확인" class="slide level3">
+<h3>Flights 결측치 확인</h3>
+<div class="columns">
+<div class="column" style="width:40%;">
+<div id="ab5e8ffa" class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>dep_time     8255
+dep_delay    8255
+arr_time     8713
+arr_delay    9430
+tailnum      2512
+air_time     9430
+dtype: int64</code></pre>
+</div>
+</div>
+</div><div class="column" style="width:60%;">
+<div id="98267e12" class="cell" data-execution_count="11">
+<div class="cell-output cell-output-display">
+<div>
+<figure>
+<p><img data-src="project-nycflights_files/figure-revealjs/cell-12-output-1.png"></p>
+</figure>
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section id="시간-데이터-결측치-처리" class="slide level3">
+<h3>시간 데이터 결측치 처리</h3>
+<div id="3289d3b1" class="cell" data-execution_count="12">
+<div class="cell-output cell-output-stdout">
+<pre><code>dep_time: 8255
+arr_time: 8713
+dep_delay: 8255
+arr_delay: 9430
+air_time: 9430
+
+모든 시간/지연 컬럼이 결측인 행의 수: 8255
+ --&gt; 이 경우 결항으로 가정
+dep_time: 0
+arr_time: 458
+dep_delay: 0
+arr_delay: 1175
+air_time: 1175</code></pre>
+</div>
+</div>
+</section>
+<section id="항공편-취소-여부-분포" class="slide level3">
+<h3>항공편 취소 여부 분포</h3>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-14-output-1.png" class="r-stretch"></section>
+<section id="시간-데이터-결측치-처리-후-결측치-히트맵" class="slide level3">
+<h3>시간 데이터 결측치 처리 후 결측치 히트맵</h3>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-15-output-1.png" class="r-stretch"></section>
+<section id="tailnum-model-결측치-확인" class="slide level3">
+<h3>tailnum, model 결측치 확인</h3>
+<ul>
+<li>flights 테이블과 planes 테이블을 병합</li>
+<li>이후 tailnum과 model 결측치 비율 확인</li>
+</ul>
+<div id="897cd2de" class="cell" data-execution_count="15">
+<div class="cell-output cell-output-stdout">
+<pre><code>총 행 개수: 336776
+tailnum 결측치 개수: 2512 (0.75%)
+model 결측치 개수: 52606 (15.62%)</code></pre>
+</div>
+
+</div>
+<img data-src="project-nycflights_files/figure-revealjs/cell-16-output-2.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="결측값-채우기-전략" class="slide level3">
+<h3>결측값 채우기 전략</h3>
+<ul>
+<li><p>기종 기반 정밀 분석(지연률, 기체 성능 등) → dropna 처리</p></li>
+<li><p>운항량 연관, 전체 데이터 흐름 중요 →’Unknown’으로 채움</p></li>
+</ul>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-17-output-1.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="데이터-선택" class="slide level3">
+<h3>데이터 선택</h3>
+<p>최종 선택된 컬럼</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>구분</th>
+<th>포함 컬럼</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>날짜/시간 정보</td>
+<td><code>year</code>, <code>month</code>, <code>day</code>, <code>hour</code>, <code>dep_time</code>, <code>sched_dep_time</code>, <code>arr_time</code>, <code>sched_arr_time</code></td>
+</tr>
+<tr class="even">
+<td>지연 정보</td>
+<td><code>dep_delay</code>, <code>arr_delay</code></td>
+</tr>
+<tr class="odd">
+<td>항공편 정보</td>
+<td><code>carrier</code>, <code>flight</code>, <code>origin</code>, <code>dest</code></td>
+</tr>
+<tr class="even">
+<td>항공기 정보</td>
+<td><code>tailnum</code>, <code>year_plane</code>, <code>model</code></td>
+</tr>
+</tbody>
+</table>
+</section></section>
+<section>
+<section id="데이터-분석" class="title-slide slide level2 center">
+<h2>데이터 분석</h2>
+<p>매각 명분 확인 및 타당성 검토</p>
+</section>
+<section id="항공기체-제작년도-분포" class="slide level3">
+<h3>항공기체 제작년도 분포</h3>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-18-output-1.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="젯블루b6-항공사와-사우스웨스트wn-항공사의-시간대별-평균-지연시간-비교" class="slide level3">
+<h3>젯블루(B6) 항공사와 사우스웨스트(WN) 항공사의 시간대별 평균 지연시간 비교</h3>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-19-output-1.png" class="r-stretch"></section></section>
+<section>
+<section id="결과" class="title-slide slide level2 center">
+<h2>결과</h2>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-20-output-1.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="section-2" class="slide level3">
+<h3></h3>
+
+<img data-src="project-nycflights_files/figure-revealjs/cell-21-output-1.png" class="r-stretch"></section>
+<section id="q-a" class="slide level3 middle" style="text-align: center; font-size: 2em;">
+<h3>Q &amp; A</h3>
+
+</section></section>
     </div>
   <div class="quarto-auto-generated-content" style="display: none;">
 <div class="footer footer-default">
